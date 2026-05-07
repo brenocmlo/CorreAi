@@ -1,12 +1,16 @@
-import { Request, Response } from 'express';
-import { prisma } from '../utils/prisma';
-import { AuthRequest } from '../middlewares/auth.middleware';
+import type { Response } from 'express';
+import { prisma } from '../utils/prisma.js';
+import type { AuthRequest } from '../middlewares/auth.middleware.js';
 
 export class PropertiesController {
   static async getProperties(req: AuthRequest, res: Response) {
     try {
       const brokerId = req.user?.id;
       
+      if (!brokerId) {
+        return res.status(401).json({ success: false, message: 'Unauthorized' });
+      }
+
       const properties = await prisma.property.findMany({
         where: { brokerId },
         orderBy: { createdAt: 'desc' }

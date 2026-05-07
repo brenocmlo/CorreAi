@@ -1,6 +1,6 @@
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
-import { prisma } from '../utils/prisma';
+import { prisma } from '../utils/prisma.js';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'fallback_secret';
 const SALT_ROUNDS = parseInt(process.env.BCRYPT_SALT_ROUNDS || '10');
@@ -9,7 +9,6 @@ export class AuthService {
   static async register(data: any) {
     const { name, email, password, phone, document, license } = data;
 
-    // Check if user exists
     const existingBroker = await prisma.broker.findFirst({
       where: {
         OR: [

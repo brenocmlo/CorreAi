@@ -1,10 +1,9 @@
 import { Router } from 'express';
-import { LeadsController } from '../controllers/leads.controller';
-import { authenticateToken } from '../middlewares/auth.middleware';
+import { LeadsController } from '../controllers/leads.controller.js';
+import { authenticateToken } from '../middlewares/auth.middleware.js';
 
 const router = Router();
 
-// Protect all lead routes
 router.use(authenticateToken);
 
 router.get('/', LeadsController.getLeads);

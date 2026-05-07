@@ -1,17 +1,15 @@
-import { Request, Response } from 'express';
-import { ChatInteraction } from '../models/ChatInteraction';
+import type { Request, Response } from 'express';
+import { ChatInteraction } from '../models/ChatInteraction.js';
 
 export class ChatController {
   static async receiveMessage(req: Request, res: Response) {
     try {
-      // In a real scenario, this might come from WhatsApp Webhook or Web Chat
       const { leadId, brokerId, message, channel } = req.body;
 
       if (!leadId || !brokerId || !message) {
         return res.status(400).json({ success: false, message: 'Missing required fields' });
       }
 
-      // Find active session or create new one
       let interaction = await ChatInteraction.findOne({ leadId, status: 'active' });
 
       if (!interaction) {
@@ -24,15 +22,12 @@ export class ChatController {
         });
       }
 
-      // Append user message
       interaction.messages.push({
         role: 'user',
         content: message,
         timestamp: new Date()
       });
 
-      // MOCK AI RESPONSE
-      // In production, you would call OpenAI/Anthropic API here
       const mockAiResponse = `Recebi a sua mensagem: "${message}". Sou o assistente CorretAI e em breve poderei ajudá-lo com recomendações de imóveis perfeitos para si!`;
       
       interaction.messages.push({

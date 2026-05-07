@@ -1,35 +1,30 @@
 import express from 'express';
-import dotenv from 'dotenv';
+import * as dotenv from 'dotenv';
 import mongoose from 'mongoose';
 import { PrismaClient } from '@prisma/client';
 import cors from 'cors';
-import authRoutes from './routes/auth.routes';
-import leadsRoutes from './routes/leads.routes';
-import propertiesRoutes from './routes/properties.routes';
-import chatRoutes from './routes/chat.routes';
+import authRoutes from './routes/auth.routes.js';
+import leadsRoutes from './routes/leads.routes.js';
+import propertiesRoutes from './routes/properties.routes.js';
+import chatRoutes from './routes/chat.routes.js';
 
 dotenv.config();
 
 const app = express();
 const port = process.env.PORT || 3001;
 
-// Initialize Prisma
 const prisma = new PrismaClient();
 
-// Middleware
 app.use(cors());
 app.use(express.json());
 
-// Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/leads', leadsRoutes);
 app.use('/api/properties', propertiesRoutes);
 app.use('/api/chat', chatRoutes);
 
-// Basic Route
 app.get('/health', async (req, res) => {
   try {
-    // Check DB Connections
     await prisma.$queryRaw`SELECT 1`;
     const mongoState = mongoose.connection.readyState === 1 ? 'Connected' : 'Disconnected';
     
@@ -44,7 +39,6 @@ app.get('/health', async (req, res) => {
   }
 });
 
-// Connect to MongoDB and start server
 async function bootstrap() {
   try {
     if (process.env.MONGODB_URL) {

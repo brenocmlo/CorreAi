@@ -1,4 +1,4 @@
-import mongoose, { Schema, Document } from 'mongoose';
+import mongoose, { Schema, type Document } from 'mongoose';
 
 export interface IMessage {
   role: 'user' | 'assistant' | 'system';
@@ -8,8 +8,8 @@ export interface IMessage {
 }
 
 export interface IChatInteraction extends Document {
-  leadId: string;       // Foreign key to PostgreSQL Lead UUID
-  brokerId: string;     // Foreign key to PostgreSQL Broker UUID
+  leadId: string;
+  brokerId: string;
   channel: 'whatsapp' | 'web' | 'mobile';
   messages: IMessage[];
   context: {
@@ -51,7 +51,6 @@ const ChatInteractionSchema = new Schema<IChatInteraction>(
   }
 );
 
-// Index for quick history lookup
 ChatInteractionSchema.index({ leadId: 1, createdAt: -1 });
 
 export const ChatInteraction = mongoose.model<IChatInteraction>('ChatInteraction', ChatInteractionSchema);

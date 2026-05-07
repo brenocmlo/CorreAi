@@ -1,6 +1,7 @@
 version: '3.8'
 
 services:
+  # --- Databases ---
   postgres:
     image: postgres:15-alpine
     container_name: correai-postgres
@@ -35,6 +36,38 @@ services:
       - "6379:6379"
     volumes:
       - redis_data:/data
+
+  # --- Applications ---
+  api:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    container_name: correai-api
+    restart: always
+    environment:
+      DATABASE_URL: "postgresql://postgres:password@postgres:5432/correai?schema=public"
+      MONGODB_URL: "mongodb://admin:password@mongodb:27017/correai?authSource=admin"
+      REDIS_URL: "redis://redis:6379"
+      JWT_SECRET: "sua_chave_secreta_super_segura"
+    ports:
+      - "3001:3001"
+    depends_on:
+      - postgres
+      - mongodb
+      - redis
+
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+    container_name: correai-web
+    restart: always
+    environment:
+      NEXT_PUBLIC_API_URL: "http://localhost:3001/api"
+    ports:
+      - "3000:3000"
+    depends_on:
+      - api
 
 volumes:
   postgres_data:
