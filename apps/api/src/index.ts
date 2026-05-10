@@ -46,9 +46,11 @@ async function bootstrap() {
       console.log('📦 Connected to MongoDB');
     }
 
-    app.listen(port, () => {
-      console.log(`🚀 API Server running on http://localhost:${port}`);
-    });
+    if (process.env.NODE_ENV !== 'production' && !process.env.VERCEL) {
+      app.listen(port, () => {
+        console.log(`🚀 API Server running on http://localhost:${port}`);
+      });
+    }
   } catch (error) {
     console.error('Failed to start server:', error);
     process.exit(1);
@@ -56,3 +58,5 @@ async function bootstrap() {
 }
 
 bootstrap();
+
+export default app;
