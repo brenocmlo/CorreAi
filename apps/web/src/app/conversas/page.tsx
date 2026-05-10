@@ -1,7 +1,6 @@
 "use client";
 
-import { Search, Phone, Video, MoreVertical, Bot, Send, Heart, Building, Image as ImageIcon } from "lucide-react";
-import Image from "next/image";
+import { Search, Phone, Video, MoreVertical, Bot, Send, Heart, Image as ImageIcon } from "lucide-react";
 
 export default function Conversas() {
   const leads = [

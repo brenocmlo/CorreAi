@@ -1,6 +1,6 @@
 "use client";
 
-import { Search, Plus, Filter, UserPlus, MoreVertical, Mail, Phone } from "lucide-react";
+import { Search, Filter, UserPlus, MoreVertical, Mail, Phone } from "lucide-react";
 
 export default function Leads() {
   const leads = [

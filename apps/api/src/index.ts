@@ -23,7 +23,7 @@ app.use('/api/leads', leadsRoutes);
 app.use('/api/properties', propertiesRoutes);
 app.use('/api/chat', chatRoutes);
 
-app.get('/health', async (req, res) => {
+app.get('/health', async (_req, res) => {
   try {
     await prisma.$queryRaw`SELECT 1`;
     const mongoState = mongoose.connection.readyState === 1 ? 'Connected' : 'Disconnected';

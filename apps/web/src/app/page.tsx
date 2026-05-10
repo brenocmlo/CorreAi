@@ -1,7 +1,6 @@
 "use client";
 
 import { Bell, Search, TrendingUp, MessageSquare, Wallet, Bot } from "lucide-react";
-import Image from "next/image";
 
 export default function Dashboard() {
   return (
