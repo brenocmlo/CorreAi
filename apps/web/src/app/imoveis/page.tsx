@@ -1,6 +1,7 @@
 "use client";
 
 import { Search, Plus, Filter, MapPin, Bed, Bath, Car } from "lucide-react";
+import Link from "next/link";
 
 export default function Imoveis() {
   const properties = [
@@ -17,10 +18,10 @@ export default function Imoveis() {
           <h1 className="text-2xl font-bold text-text-main">Gerenciamento de Imóveis</h1>
           <p className="text-text-muted text-sm mt-1">Visualize e edite a sua carteira de propriedades.</p>
         </div>
-        <button className="bg-primary hover:bg-primary-light text-white px-5 py-2.5 rounded-xl flex items-center gap-2 text-sm font-medium transition-colors shadow-sm">
+        <Link href="/imoveis/novo" className="bg-primary hover:bg-primary-light text-white px-5 py-2.5 rounded-xl flex items-center gap-2 text-sm font-medium transition-colors shadow-sm">
           <Plus size={18} />
           Adicionar Imóvel
-        </button>
+        </Link>
       </header>
 
       {/* Filters */}
@@ -47,7 +48,7 @@ export default function Imoveis() {
       {/* Properties Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
         {properties.map((prop) => (
-          <div key={prop.id} className="bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100 hover:shadow-md transition-shadow group">
+          <Link href={`/imoveis/${prop.id}`} key={prop.id} className="bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100 hover:shadow-md transition-shadow group block">
             {/* Image Placeholder */}
             <div className="h-48 bg-gray-200 relative">
                <div className="absolute top-3 left-3 bg-white/90 backdrop-blur text-text-main text-[10px] font-bold px-2.5 py-1 rounded-md uppercase tracking-wide">
@@ -88,7 +89,7 @@ export default function Imoveis() {
                 </div>
               </div>
             </div>
-          </div>
+          </Link>
         ))}
       </div>
     </div>

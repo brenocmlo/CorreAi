@@ -64,10 +64,10 @@ export default function Sidebar() {
 
       <div className="px-4 space-y-4">
         {/* New Campaign Button */}
-        <button className="w-full bg-primary hover:bg-primary-light text-white rounded-xl py-3 flex items-center justify-center gap-2 font-medium transition-colors shadow-sm">
+        <Link href="/campanhas/nova" className="w-full bg-primary hover:bg-primary-light text-white rounded-xl py-3 flex items-center justify-center gap-2 font-medium transition-colors shadow-sm">
           <Plus size={18} />
           Nova Campanha
-        </button>
+        </Link>
 
         {/* Footer Links */}
         <div className="pt-4 space-y-1">

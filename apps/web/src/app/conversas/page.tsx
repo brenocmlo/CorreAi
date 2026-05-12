@@ -1,13 +1,34 @@
 "use client";
 
 import { Search, Phone, Video, MoreVertical, Bot, Send, Heart, Image as ImageIcon } from "lucide-react";
+import { useState } from "react";
 
 export default function Conversas() {
+  const [activeLeadIndex, setActiveLeadIndex] = useState(0);
+  const [messageText, setMessageText] = useState("");
+  const [isFavorite, setIsFavorite] = useState(true);
+  const [messages, setMessages] = useState([
+    { id: 1, text: "Olá! Estou procurando um apartamento moderno de 2 quartos no centro. Orçamento em torno de R$ 850k. Precisa ter uma boa vista!", sender: 'user', time: "10:42 AM" },
+    { id: 2, text: "Ótima escolha, Sarah! Selecionei três listagens premium que combinam com sua preferência pelo centro e seu orçamento. Todas possuem janelas do chão ao teto com vista panorâmica da cidade.", sender: 'bot' }
+  ]);
+
   const leads = [
-    { name: "Sarah Jenkins", msg: '"O acesso ao rooftop é..."', time: "há 2m", active: true, avatar: "S" },
-    { name: "Marcus Thorne", msg: "Checking your last offer...", time: "há 1h", active: false, avatar: "M" },
-    { name: "Elena Rodriguez", msg: '"Can we schedule for Tues?"', time: "há 3h", active: false, avatar: "E" },
+    { name: "Sarah Jenkins", msg: '"O acesso ao rooftop é..."', time: "há 2m", avatar: "S" },
+    { name: "Marcus Thorne", msg: "Checking your last offer...", time: "há 1h", avatar: "M" },
+    { name: "Elena Rodriguez", msg: '"Can we schedule for Tues?"', time: "há 3h", avatar: "E" },
   ];
+
+  const handleSendMessage = () => {
+    if (!messageText.trim()) return;
+    const newMsg = {
+      id: Date.now(),
+      text: messageText,
+      sender: 'user',
+      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+    };
+    setMessages([...messages, newMsg]);
+    setMessageText("");
+  };
 
   return (
     <div className="flex-1 flex overflow-hidden bg-background">
@@ -26,26 +47,30 @@ export default function Conversas() {
         </div>
 
         <div className="flex-1 overflow-y-auto px-4 space-y-2">
-          {leads.map((lead, i) => (
-            <div 
-              key={i} 
-              className={`flex items-center gap-3 p-3 rounded-2xl cursor-pointer transition-colors ${lead.active ? 'bg-white shadow-sm border border-gray-100' : 'hover:bg-gray-100'}`}
-            >
-              <div className="relative">
-                <div className={`w-12 h-12 rounded-full flex items-center justify-center font-bold text-lg ${lead.active ? 'bg-indigo-100 text-indigo-700' : 'bg-gray-300 text-gray-600'}`}>
-                  {lead.avatar}
+          {leads.map((lead, i) => {
+            const isActive = i === activeLeadIndex;
+            return (
+              <div 
+                key={i} 
+                onClick={() => setActiveLeadIndex(i)}
+                className={`flex items-center gap-3 p-3 rounded-2xl cursor-pointer transition-colors ${isActive ? 'bg-white shadow-sm border border-gray-100' : 'hover:bg-gray-100'}`}
+              >
+                <div className="relative">
+                  <div className={`w-12 h-12 rounded-full flex items-center justify-center font-bold text-lg ${isActive ? 'bg-indigo-100 text-indigo-700' : 'bg-gray-300 text-gray-600'}`}>
+                    {lead.avatar}
+                  </div>
+                  <div className={`absolute bottom-0 right-0 w-3.5 h-3.5 border-2 border-white rounded-full ${isActive ? 'bg-accent' : 'bg-gray-400'}`}></div>
                 </div>
-                <div className={`absolute bottom-0 right-0 w-3.5 h-3.5 border-2 border-white rounded-full ${lead.active ? 'bg-accent' : 'bg-gray-400'}`}></div>
-              </div>
-              <div className="flex-1 overflow-hidden">
-                <div className="flex justify-between items-center mb-0.5">
-                  <h4 className="font-bold text-text-main text-sm truncate">{lead.name}</h4>
-                  <span className="text-xs text-text-muted">{lead.time}</span>
+                <div className="flex-1 overflow-hidden">
+                  <div className="flex justify-between items-center mb-0.5">
+                    <h4 className="font-bold text-text-main text-sm truncate">{lead.name}</h4>
+                    <span className="text-xs text-text-muted">{lead.time}</span>
+                  </div>
+                  <p className="text-xs text-text-muted truncate">{lead.msg}</p>
                 </div>
-                <p className="text-xs text-text-muted truncate">{lead.msg}</p>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
 
@@ -66,9 +91,9 @@ export default function Conversas() {
             </div>
           </div>
           <div className="flex items-center gap-4 text-gray-500">
-            <button className="hover:text-text-main transition-colors"><Phone size={20} /></button>
-            <button className="hover:text-text-main transition-colors"><Video size={20} /></button>
-            <button className="hover:text-text-main transition-colors"><MoreVertical size={20} /></button>
+            <button onClick={() => alert("Iniciar chamada telefônica")} className="hover:text-text-main transition-colors"><Phone size={20} /></button>
+            <button onClick={() => alert("Iniciar chamada de vídeo")} className="hover:text-text-main transition-colors"><Video size={20} /></button>
+            <button onClick={() => alert("Mais opções")} className="hover:text-text-main transition-colors"><MoreVertical size={20} /></button>
           </div>
         </header>
 
@@ -78,66 +103,69 @@ export default function Conversas() {
             <span className="text-xs font-medium text-text-muted bg-gray-50 px-3 py-1 rounded-full">Today, October 24</span>
           </div>
 
-          {/* User Message */}
-          <div className="flex justify-end">
-            <div className="bg-accent text-white rounded-2xl rounded-tr-sm px-5 py-4 max-w-md shadow-sm">
-              <p className="text-sm leading-relaxed">Olá! Estou procurando um apartamento moderno de 2 quartos no centro. Orçamento em torno de R$ 850k. Precisa ter uma boa vista!</p>
-              <div className="text-right mt-2 text-white/70 text-[10px]">10:42 AM</div>
-            </div>
-          </div>
-
-          {/* Bot Response */}
-          <div className="flex gap-3">
-            <div className="w-8 h-8 rounded-full bg-primary flex flex-shrink-0 items-center justify-center mt-1">
-              <Bot size={14} className="text-white" />
-            </div>
-            <div className="max-w-xl">
-              <div className="bg-white border border-gray-100 shadow-sm rounded-2xl rounded-tl-sm px-5 py-4 mb-4">
-                <p className="text-sm text-text-main leading-relaxed">
-                  Ótima escolha, Sarah! Selecionei três listagens premium que combinam com sua preferência pelo centro e seu orçamento. Todas possuem janelas do chão ao teto com vista panorâmica da cidade.
-                </p>
-              </div>
-              
-              {/* Property Cards inside chat */}
-              <div className="flex gap-4 overflow-x-auto pb-2">
-                {/* Property Card 1 */}
-                <div className="min-w-[240px] bg-white border border-gray-100 rounded-2xl overflow-hidden shadow-sm">
-                  <div className="h-32 bg-gray-200 relative">
-                     <div className="absolute top-2 left-2 bg-accent text-white text-[10px] font-bold px-2 py-1 rounded uppercase tracking-wide">Destaque</div>
-                     <div className="absolute bottom-2 right-2 bg-black/50 text-white text-xs font-bold px-2 py-1 rounded-lg backdrop-blur-sm">$825,000</div>
-                  </div>
-                  <div className="p-4">
-                    <h4 className="font-bold text-text-main text-sm truncate">O Zenith Loft</h4>
-                    <p className="text-xs text-text-muted mt-1 truncate">Centro da Cidade</p>
-                  </div>
-                </div>
-
-                {/* Property Card 2 */}
-                <div className="min-w-[240px] bg-white border border-gray-100 rounded-2xl overflow-hidden shadow-sm">
-                  <div className="h-32 bg-gray-200 relative">
-                     <div className="absolute bottom-2 right-2 bg-black/50 text-white text-xs font-bold px-2 py-1 rounded-lg backdrop-blur-sm">$849,000</div>
-                  </div>
-                  <div className="p-4">
-                    <h4 className="font-bold text-text-main text-sm truncate">Azure Heights Interior</h4>
-                    <p className="text-xs text-text-muted mt-1 truncate">Centro da Cidade</p>
-                  </div>
+          {messages.map((msg) => (
+            msg.sender === 'user' ? (
+              <div key={msg.id} className="flex justify-end">
+                <div className="bg-accent text-white rounded-2xl rounded-tr-sm px-5 py-4 max-w-md shadow-sm">
+                  <p className="text-sm leading-relaxed">{msg.text}</p>
+                  {msg.time && <div className="text-right mt-2 text-white/70 text-[10px]">{msg.time}</div>}
                 </div>
               </div>
+            ) : (
+              <div key={msg.id} className="flex gap-3">
+                <div className="w-8 h-8 rounded-full bg-primary flex flex-shrink-0 items-center justify-center mt-1">
+                  <Bot size={14} className="text-white" />
+                </div>
+                <div className="max-w-xl">
+                  <div className="bg-white border border-gray-100 shadow-sm rounded-2xl rounded-tl-sm px-5 py-4 mb-4">
+                    <p className="text-sm text-text-main leading-relaxed">
+                      {msg.text}
+                    </p>
+                  </div>
+                  
+                  {msg.id === 2 && (
+                    <div className="flex gap-4 overflow-x-auto pb-2">
+                      <div className="min-w-[240px] bg-white border border-gray-100 rounded-2xl overflow-hidden shadow-sm">
+                        <div className="h-32 bg-gray-200 relative">
+                           <div className="absolute top-2 left-2 bg-accent text-white text-[10px] font-bold px-2 py-1 rounded uppercase tracking-wide">Destaque</div>
+                           <div className="absolute bottom-2 right-2 bg-black/50 text-white text-xs font-bold px-2 py-1 rounded-lg backdrop-blur-sm">$825,000</div>
+                        </div>
+                        <div className="p-4">
+                          <h4 className="font-bold text-text-main text-sm truncate">O Zenith Loft</h4>
+                          <p className="text-xs text-text-muted mt-1 truncate">Centro da Cidade</p>
+                        </div>
+                      </div>
 
-            </div>
-          </div>
+                      <div className="min-w-[240px] bg-white border border-gray-100 rounded-2xl overflow-hidden shadow-sm">
+                        <div className="h-32 bg-gray-200 relative">
+                           <div className="absolute bottom-2 right-2 bg-black/50 text-white text-xs font-bold px-2 py-1 rounded-lg backdrop-blur-sm">$849,000</div>
+                        </div>
+                        <div className="p-4">
+                          <h4 className="font-bold text-text-main text-sm truncate">Azure Heights Interior</h4>
+                          <p className="text-xs text-text-muted mt-1 truncate">Centro da Cidade</p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )
+          ))}
         </div>
 
         {/* Input Area */}
         <div className="p-4 bg-white border-t border-gray-100">
           <div className="flex items-center gap-3 bg-gray-50 border border-gray-200 rounded-full px-4 py-2">
-            <button className="text-gray-400 hover:text-primary transition-colors"><ImageIcon size={20} /></button>
+            <button onClick={() => alert("Anexar imagem")} className="text-gray-400 hover:text-primary transition-colors"><ImageIcon size={20} /></button>
             <input 
               type="text" 
               placeholder="Escreva sua mensagem..." 
+              value={messageText}
+              onChange={(e) => setMessageText(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
               className="flex-1 bg-transparent border-none focus:outline-none text-sm text-text-main py-2"
             />
-            <button className="w-10 h-10 bg-primary text-white rounded-full flex items-center justify-center hover:bg-primary-light transition-colors shadow-sm">
+            <button onClick={handleSendMessage} className="w-10 h-10 bg-primary text-white rounded-full flex items-center justify-center hover:bg-primary-light transition-colors shadow-sm">
               <Send size={16} />
             </button>
           </div>
@@ -154,7 +182,9 @@ export default function Conversas() {
           
           <div className="flex justify-between items-start mb-2">
             <h2 className="text-2xl font-bold text-text-main leading-tight">O Zenith Loft</h2>
-            <button className="text-accent hover:text-accent-light transition-colors"><Heart size={24} className="fill-current" /></button>
+            <button onClick={() => setIsFavorite(!isFavorite)} className={`${isFavorite ? 'text-accent hover:text-accent-light' : 'text-gray-300 hover:text-gray-400'} transition-colors`}>
+              <Heart size={24} className={isFavorite ? "fill-current" : ""} />
+            </button>
           </div>
           
           <p className="text-sm text-text-muted leading-relaxed mb-6">

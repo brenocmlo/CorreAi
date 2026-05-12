@@ -1,6 +1,7 @@
 "use client";
 
 import { Search, Filter, UserPlus, MoreVertical, Mail, Phone } from "lucide-react";
+import Link from "next/link";
 
 export default function Leads() {
   const leads = [
@@ -27,10 +28,10 @@ export default function Leads() {
           <h1 className="text-2xl font-bold text-text-main">Leads e Clientes</h1>
           <p className="text-text-muted text-sm mt-1">Acompanhe e nutra sua base de contatos.</p>
         </div>
-        <button className="bg-primary hover:bg-primary-light text-white px-5 py-2.5 rounded-xl flex items-center gap-2 text-sm font-medium transition-colors shadow-sm">
+        <Link href="/leads/novo" className="bg-primary hover:bg-primary-light text-white px-5 py-2.5 rounded-xl flex items-center gap-2 text-sm font-medium transition-colors shadow-sm">
           <UserPlus size={18} />
           Novo Lead
-        </button>
+        </Link>
       </header>
 
       {/* Control Bar */}
