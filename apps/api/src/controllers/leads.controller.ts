@@ -47,4 +47,40 @@ export class LeadsController {
       res.status(400).json({ success: false, message: error.message });
     }
   }
+
+  static async updateLead(req: AuthRequest, res: Response) {
+    try {
+      const brokerId = req.user?.id;
+      const { id } = req.params;
+      const data = req.body;
+
+      if (!brokerId) return res.status(401).json({ success: false, message: 'Unauthorized' });
+
+      const lead = await prisma.lead.update({
+        where: { id, brokerId },
+        data
+      });
+
+      res.status(200).json({ success: true, data: lead });
+    } catch (error: any) {
+      res.status(400).json({ success: false, message: error.message });
+    }
+  }
+
+  static async deleteLead(req: AuthRequest, res: Response) {
+    try {
+      const brokerId = req.user?.id;
+      const { id } = req.params;
+
+      if (!brokerId) return res.status(401).json({ success: false, message: 'Unauthorized' });
+
+      await prisma.lead.delete({
+        where: { id, brokerId }
+      });
+
+      res.status(200).json({ success: true, message: 'Lead deleted successfully' });
+    } catch (error: any) {
+      res.status(400).json({ success: false, message: error.message });
+    }
+  }
 }

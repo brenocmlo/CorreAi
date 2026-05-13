@@ -8,5 +8,7 @@ router.use(authenticateToken);
 
 router.get('/', LeadsController.getLeads);
 router.post('/', LeadsController.createLead);
+router.put('/:id', LeadsController.updateLead);
+router.delete('/:id', LeadsController.deleteLead);
 
 export default router;
