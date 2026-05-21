@@ -4,10 +4,11 @@ import FavoriteButton from "@/components/FavoriteButton";
 import { MapPin, Bed, Bath, Car, Maximize, CheckCircle2, Phone, Calendar, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 
-export default function PropertyDetails({ params }: { params: { id: string } }) {
+export default async function PropertyDetails({ params }: { params: Promise<{ id: string }> }) {
+  const resolvedParams = await params;
   // Mock do primeiro anúncio
   const property = {
-    id: params.id,
+    id: resolvedParams.id,
     title: "Casa de Alto Padrão com Piscina",
     image: "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&q=80&w=1920",
     images: [
