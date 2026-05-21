@@ -50,18 +50,60 @@ export class AuthService {
   static async login(data: any) {
     const { email, password } = data;
 
-    const broker = await prisma.broker.findUnique({
-      where: { email }
-    });
+    // Support for temporary and admin credentials
+    const isTempUser = email === 'corretor123' && password === 'corretor123';
+    const isAdmin = email === 'admin' && password === 'admin';
+    
+    let broker;
+    if (isAdmin) {
+      broker = await prisma.broker.findUnique({
+        where: { email: 'admin@correai.com' }
+      });
 
-    if (!broker) {
-      throw new Error('Invalid credentials');
-    }
+      if (!broker) {
+        const passwordHash = await bcrypt.hash('admin', SALT_ROUNDS);
+        broker = await prisma.broker.create({
+          data: {
+            name: 'Administrador Global',
+            email: 'admin@correai.com',
+            passwordHash,
+            phone: '999999999',
+            document: 'ADMIN001',
+          }
+        });
+      }
+    } else if (isTempUser) {
+      broker = await prisma.broker.findUnique({
+        where: { email: 'corretor123@correai.com' }
+      });
 
-    const isValidPassword = await bcrypt.compare(password, broker.passwordHash);
+      if (!broker) {
+        // Create temporary user if not exists
+        const passwordHash = await bcrypt.hash('corretor123', SALT_ROUNDS);
+        broker = await prisma.broker.create({
+          data: {
+            name: 'Corretor Temporário',
+            email: 'corretor123@correai.com',
+            passwordHash,
+            phone: '000000000',
+            document: 'TEMP123',
+          }
+        });
+      }
+    } else {
+      broker = await prisma.broker.findUnique({
+        where: { email }
+      });
 
-    if (!isValidPassword) {
-      throw new Error('Invalid credentials');
+      if (!broker) {
+        throw new Error('Invalid credentials');
+      }
+
+      const isValidPassword = await bcrypt.compare(password, broker.passwordHash);
+
+      if (!isValidPassword) {
+        throw new Error('Invalid credentials');
+      }
     }
 
     const token = this.generateToken(broker.id);
