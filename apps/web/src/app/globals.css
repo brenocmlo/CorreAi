@@ -1,0 +1,51 @@
+@import "tailwindcss";
+
+@theme {
+  --color-primary: #111827;
+  --color-primary-light: #1f2937;
+  --color-accent: #10b981;
+  --color-accent-light: #d1fae5;
+  --color-accent-lighter: #ecfdf5;
+  
+  --color-background: #f9fafb;
+  --color-surface: #ffffff;
+  
+  --color-text-main: #111827;
+  --color-text-muted: #6b7280;
+  
+  --font-sans: "Inter", "sans-serif";
+}
+
+@layer base {
+  :root {
+    --background: var(--color-background);
+    --foreground: var(--color-text-main);
+  }
+
+  body {
+    background-color: var(--background);
+    color: var(--foreground);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+}
+
+/* Custom scrollbar for chat and lists */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #e5e7eb;
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #d1d5db;
+}

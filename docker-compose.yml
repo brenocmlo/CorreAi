@@ -1,0 +1,75 @@
+version: '3.8'
+
+services:
+  # --- Databases ---
+  postgres:
+    image: postgres:15-alpine
+    container_name: correai-postgres
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: correai
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  mongodb:
+    image: mongo:6.0
+    container_name: correai-mongodb
+    restart: always
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: password
+      MONGO_INITDB_DATABASE: correai
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+
+  redis:
+    image: redis:7-alpine
+    container_name: correai-redis
+    restart: always
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+
+  # --- Applications ---
+  api:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    container_name: correai-api
+    restart: always
+    environment:
+      DATABASE_URL: "postgresql://postgres:password@postgres:5432/correai?schema=public"
+      MONGODB_URL: "mongodb://admin:password@mongodb:27017/correai?authSource=admin"
+      REDIS_URL: "redis://redis:6379"
+      JWT_SECRET: "sua_chave_secreta_super_segura"
+    ports:
+      - "3001:3001"
+    depends_on:
+      - postgres
+      - mongodb
+      - redis
+
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+    container_name: correai-web
+    restart: always
+    environment:
+      NEXT_PUBLIC_API_URL: "http://localhost:3001/api"
+    ports:
+      - "3000:3000"
+    depends_on:
+      - api
+
+volumes:
+  postgres_data:
+  mongodb_data:
+  redis_data:

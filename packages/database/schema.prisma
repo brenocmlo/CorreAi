@@ -1,0 +1,141 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum PropertyType {
+  HOUSE
+  APARTMENT
+  COMMERCIAL
+  LAND
+  OTHER
+}
+
+enum PropertyStatus {
+  AVAILABLE
+  RESERVED
+  SOLD
+  RENTED
+  INACTIVE
+}
+
+enum FunnelStage {
+  NEW
+  IN_PROGRESS
+  VISIT_SCHEDULED
+  PROPOSAL_SENT
+  NEGOTIATION
+  CLOSED_WON
+  CLOSED_LOST
+}
+
+model Broker {
+  id            String    @id @default(uuid())
+  name          String
+  email         String    @unique
+  passwordHash  String
+  phone         String
+  document      String    @unique // NIF / CRECI
+  license       String?
+  avatarUrl     String?
+  
+  properties    Property[]
+  leads         Lead[]
+  
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@map("brokers")
+}
+
+model Property {
+  id              String         @id @default(uuid())
+  title           String
+  description     String         @db.Text
+  type            PropertyType
+  status          PropertyStatus @default(AVAILABLE)
+  
+  price           Decimal        @db.Decimal(12, 2)
+  area            Float          // In m2
+  bedrooms        Int
+  bathrooms       Int
+  parkingSpots    Int
+  
+  address         String
+  city            String
+  state           String
+  zipCode         String
+  latitude        Float?
+  longitude       Float?
+  
+  photos          String[]       // Array of URLs
+  features        String[]       // e.g. ["Pool", "Gym"]
+  
+  brokerId        String
+  broker          Broker         @relation(fields: [brokerId], references: [id])
+  
+  leads           LeadProperty[]
+
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  @@map("properties")
+}
+
+model Lead {
+  id                String    @id @default(uuid())
+  name              String
+  email             String?
+  phone             String
+  
+  budgetMin         Decimal?  @db.Decimal(12, 2)
+  budgetMax         Decimal?  @db.Decimal(12, 2)
+  propertyTypePref  PropertyType[]
+  locationInterest  String?
+  
+  stage             FunnelStage @default(NEW)
+  
+  brokerId          String
+  broker            Broker    @relation(fields: [brokerId], references: [id])
+  
+  interestedIn      LeadProperty[]
+  funnelHistory     FunnelHistory[]
+
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  @@map("leads")
+}
+
+// Join table for Lead <-> Property (Many-to-Many)
+model LeadProperty {
+  leadId      String
+  propertyId  String
+  
+  lead        Lead     @relation(fields: [leadId], references: [id])
+  property    Property @relation(fields: [propertyId], references: [id])
+  
+  createdAt   DateTime @default(now())
+
+  @@id([leadId, propertyId])
+  @@map("lead_properties")
+}
+
+model FunnelHistory {
+  id          String      @id @default(uuid())
+  leadId      String
+  lead        Lead        @relation(fields: [leadId], references: [id])
+  
+  oldStage    FunnelStage?
+  newStage    FunnelStage
+  
+  notes       String?     @db.Text
+  
+  createdAt   DateTime    @default(now())
+
+  @@map("funnel_histories")
+}
