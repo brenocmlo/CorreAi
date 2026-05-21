@@ -51,19 +51,12 @@ export class LeadsController {
   static async updateLead(req: AuthRequest, res: Response) {
     try {
       const brokerId = req.user?.id;
-<<<<<<< HEAD
-      const { id } = req.params;
-      const data = req.body;
-
-      if (!brokerId) return res.status(401).json({ success: false, message: 'Unauthorized' });
-=======
       // CORREÇÃO: Forçando o TypeScript a tratar o parâmetro de rota 'id' como string
       const id = req.params.id as string;
       const data = req.body;
 
       if (!brokerId) return res.status(401).json({ success: false, message: 'Unauthorized' });
       if (!id) return res.status(400).json({ success: false, message: 'Lead ID is required' });
->>>>>>> 65ccd49 (chore: inicializa projeto e aplica correções de build)
 
       const lead = await prisma.lead.update({
         where: { id, brokerId },
@@ -79,17 +72,11 @@ export class LeadsController {
   static async deleteLead(req: AuthRequest, res: Response) {
     try {
       const brokerId = req.user?.id;
-<<<<<<< HEAD
-      const { id } = req.params;
-
-      if (!brokerId) return res.status(401).json({ success: false, message: 'Unauthorized' });
-=======
       // CORREÇÃO: Forçando o TypeScript a tratar o parâmetro de rota 'id' como string
       const id = req.params.id as string;
 
       if (!brokerId) return res.status(401).json({ success: false, message: 'Unauthorized' });
       if (!id) return res.status(400).json({ success: false, message: 'Lead ID is required' });
->>>>>>> 65ccd49 (chore: inicializa projeto e aplica correções de build)
 
       await prisma.lead.delete({
         where: { id, brokerId }
@@ -100,8 +87,4 @@ export class LeadsController {
       res.status(400).json({ success: false, message: error.message });
     }
   }
-<<<<<<< HEAD
 }
-=======
-}
->>>>>>> 65ccd49 (chore: inicializa projeto e aplica correções de build)
