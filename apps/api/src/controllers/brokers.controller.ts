@@ -29,7 +29,7 @@ export class BrokersController {
         orderBy: { name: 'asc' }
       });
 
-      const formattedBrokers = brokers.map(broker => ({
+      const formattedBrokers = brokers.map((broker: any) => ({
         id: broker.id,
         name: broker.name,
         email: broker.email,

@@ -58,7 +58,7 @@ Corretor:
 `;
 
       const propertiesContext = properties.length > 0 
-        ? properties.map(p => `- ID: ${p.id}\n  Título: ${p.title}\n  Tipo: ${p.type}\n  Preço: R$ ${p.price.toString()}\n  Área: ${p.area}m²\n  Quartos: ${p.bedrooms}, Banheiros: ${p.bathrooms}, Vagas: ${p.parkingSpots}\n  Endereço: ${p.address}, ${p.city} - ${p.state}\n  Características: ${p.features.join(', ')}\n  Descrição: ${p.description}`).join('\n\n')
+        ? properties.map((p: any) => `- ID: ${p.id}\n  Título: ${p.title}\n  Tipo: ${p.type}\n  Preço: R$ ${p.price.toString()}\n  Área: ${p.area}m²\n  Quartos: ${p.bedrooms}, Banheiros: ${p.bathrooms}, Vagas: ${p.parkingSpots}\n  Endereço: ${p.address}, ${p.city} - ${p.state}\n  Características: ${p.features.join(', ')}\n  Descrição: ${p.description}`).join('\n\n')
         : 'Nenhum imóvel disponível cadastrado para este corretor.';
 
       // 5. Construct System Instruction
