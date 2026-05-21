@@ -1,8 +1,4 @@
-<<<<<<< HEAD
-node_modules/
-.env.local
-.next/
-=======
+
 # Dependencies
 node_modules
 .pnp
