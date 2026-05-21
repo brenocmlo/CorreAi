@@ -15,12 +15,42 @@ export default function NovoCorretor() {
     license: "",
     password: "corretor123", // Default password
   });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // In a real app, this would call the API
-    alert("Corretor cadastrado com sucesso!");
-    router.push("/admin/corretores");
+    setLoading(true);
+    setError("");
+
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        router.push("/login");
+        return;
+      }
+
+      const res = await fetch("http://localhost:3001/api/brokers", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify(formData)
+      });
+
+      const data = await res.json();
+      if (data.success) {
+        alert("Corretor cadastrado com sucesso!");
+        router.push("/admin/corretores");
+      } else {
+        setError(data.message || "Erro ao cadastrar corretor.");
+      }
+    } catch (err) {
+      setError("Erro ao se conectar ao servidor.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -36,6 +66,11 @@ export default function NovoCorretor() {
       </header>
 
       <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-8 max-w-3xl">
+        {error && (
+          <div className="mb-6 p-4 bg-red-50 border border-red-100 rounded-2xl flex gap-2 items-center text-red-500 text-sm font-semibold">
+            <span>{error}</span>
+          </div>
+        )}
         <form onSubmit={handleSubmit} className="space-y-8">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             {/* Basic Info */}
@@ -109,8 +144,18 @@ export default function NovoCorretor() {
             <Link href="/admin/corretores" className="px-6 py-3 text-sm font-bold text-text-main bg-white border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors flex items-center gap-2">
               <X size={18} /> Cancelar
             </Link>
-            <button type="submit" className="px-8 py-3 text-sm font-bold text-white bg-primary rounded-xl hover:bg-primary-light transition-all flex items-center gap-2 shadow-lg shadow-primary/20">
-              <Save size={18} /> Salvar Corretor
+            <button 
+              type="submit" 
+              disabled={loading}
+              className="px-8 py-3 text-sm font-bold text-white bg-primary rounded-xl hover:bg-primary-light transition-all flex items-center gap-2 shadow-lg shadow-primary/20 disabled:opacity-70"
+            >
+              {loading ? (
+                <span>Salvando...</span>
+              ) : (
+                <>
+                  <Save size={18} /> Salvar Corretor
+                </>
+              )}
             </button>
           </div>
         </form>

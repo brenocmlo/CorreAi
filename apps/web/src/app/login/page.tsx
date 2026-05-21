@@ -34,14 +34,14 @@ export default function LoginPage() {
         if (email === "admin" || result.data.broker.email === "admin@correai.com") {
           router.push("/admin");
         } else {
-          router.push("/");
+          router.push("/painel");
         }
       } else {
         // Fallback para mock se for o usuário temporário e a API falhar (ex: sem conexão)
         if ((email === "corretor123" || email === "corretor123@correai.com") && password === "corretor123") {
           localStorage.setItem("token", "mock-token");
           localStorage.setItem("user", JSON.stringify({ name: "Corretor Temporário", email: "corretor123@correai.com" }));
-          router.push("/");
+          router.push("/painel");
           return;
         }
 
@@ -58,7 +58,7 @@ export default function LoginPage() {
       if ((email === "corretor123" || email === "corretor123@correai.com") && password === "corretor123") {
         localStorage.setItem("token", "mock-token");
         localStorage.setItem("user", JSON.stringify({ name: "Corretor Temporário", email: "corretor123@correai.com" }));
-        router.push("/");
+        router.push("/painel");
       } else {
         setError("Erro de conexão com o servidor.");
       }

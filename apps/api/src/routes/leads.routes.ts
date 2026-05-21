@@ -4,6 +4,8 @@ import { authenticateToken } from '../middlewares/auth.middleware.js';
 
 const router = Router();
 
+router.post('/public', LeadsController.createPublicLead);
+
 router.use(authenticateToken);
 
 router.get('/', LeadsController.getLeads);

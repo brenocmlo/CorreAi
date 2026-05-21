@@ -32,7 +32,7 @@ export default function Sidebar() {
     { name: "Todos Imóveis", href: "/admin/imoveis", icon: Home },
     { name: "Relatórios", href: "/admin/relatorios", icon: BarChart2 },
   ] : [
-    { name: "Painel", href: "/", icon: LayoutDashboard },
+    { name: "Painel", href: "/painel", icon: LayoutDashboard },
     { name: "Conversas", href: "/conversas", icon: MessageSquare },
     { name: "Imóveis", href: "/imoveis", icon: Home },
     { name: "Leads", href: "/leads", icon: Users },

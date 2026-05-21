@@ -4,6 +4,8 @@ import { authenticateToken } from '../middlewares/auth.middleware.js';
 
 const router = Router();
 
+router.get('/public', PropertiesController.getPublicProperties);
+
 router.use(authenticateToken);
 
 router.get('/', PropertiesController.getProperties);

@@ -7,6 +7,7 @@ import authRoutes from './routes/auth.routes.js';
 import leadsRoutes from './routes/leads.routes.js';
 import propertiesRoutes from './routes/properties.routes.js';
 import chatRoutes from './routes/chat.routes.js';
+import brokersRoutes from './routes/brokers.routes.js';
 
 dotenv.config();
 
@@ -22,6 +23,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/leads', leadsRoutes);
 app.use('/api/properties', propertiesRoutes);
 app.use('/api/chat', chatRoutes);
+app.use('/api/brokers', brokersRoutes);
 
 app.get('/health', async (_req, res) => {
   try {

@@ -49,6 +49,7 @@ services:
       MONGODB_URL: "mongodb://admin:password@mongodb:27017/correai?authSource=admin"
       REDIS_URL: "redis://redis:6379"
       JWT_SECRET: "sua_chave_secreta_super_segura"
+      GEMINI_API_KEY: "${GEMINI_API_KEY}"
     ports:
       - "3001:3001"
     depends_on:
@@ -64,6 +65,7 @@ services:
     restart: always
     environment:
       NEXT_PUBLIC_API_URL: "http://localhost:3001/api"
+      GEMINI_API_KEY: "${GEMINI_API_KEY}"
     ports:
       - "3000:3000"
     depends_on:

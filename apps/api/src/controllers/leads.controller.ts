@@ -1,4 +1,4 @@
-import type { Response } from 'express';
+import type { Request, Response } from 'express';
 import { prisma } from '../utils/prisma.js';
 import type { AuthRequest } from '../middlewares/auth.middleware.js';
 
@@ -83,6 +83,39 @@ export class LeadsController {
       });
 
       res.status(200).json({ success: true, message: 'Lead deleted successfully' });
+    } catch (error: any) {
+      res.status(400).json({ success: false, message: error.message });
+    }
+  }
+
+  static async createPublicLead(req: Request, res: Response) {
+    try {
+      const { name, email, phone, budgetMin, budgetMax, locationInterest, propertyTypePref, brokerId } = req.body;
+
+      let assignedBrokerId = brokerId;
+
+      if (!assignedBrokerId) {
+        const firstBroker = await prisma.broker.findFirst();
+        if (!firstBroker) {
+          return res.status(400).json({ success: false, message: 'Nenhum corretor cadastrado no sistema para receber o lead.' });
+        }
+        assignedBrokerId = firstBroker.id;
+      }
+
+      const newLead = await prisma.lead.create({
+        data: {
+          name,
+          email,
+          phone,
+          budgetMin: budgetMin ? Number(budgetMin) : null,
+          budgetMax: budgetMax ? Number(budgetMax) : null,
+          locationInterest,
+          propertyTypePref: propertyTypePref || [],
+          brokerId: assignedBrokerId
+        }
+      });
+
+      res.status(201).json({ success: true, data: newLead });
     } catch (error: any) {
       res.status(400).json({ success: false, message: error.message });
     }

@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { 
   Users, 
   Search, 
@@ -13,30 +14,102 @@ import {
   Shield,
   Trash2,
   Pencil,
-  Eye
+  Eye,
+  Loader2,
+  AlertCircle
 } from "lucide-react";
 import Link from "next/link";
 
-export default function AdminCorretores() {
-  const [brokers, setBrokers] = useState([
-    { id: 1, name: "Ricardo Mendes", email: "ricardo@correai.com", phone: "(11) 98888-7777", document: "123.456.789-00", license: "CRECI 12345", leads: 42, properties: 15, status: "Ativo" },
-    { id: 2, name: "Ana Paula", email: "ana.paula@correai.com", phone: "(11) 97777-6666", document: "987.654.321-11", license: "CRECI 54321", leads: 38, properties: 12, status: "Ativo" },
-    { id: 3, name: "Juliano Santos", email: "juliano@correai.com", phone: "(11) 96666-5555", document: "456.789.123-22", license: "CRECI 67890", leads: 25, properties: 8, status: "Inativo" },
-    { id: 4, name: "Fernanda Costa", email: "fernanda@correai.com", phone: "(11) 95555-4444", document: "321.654.987-33", license: "CRECI 09876", leads: 56, properties: 22, status: "Ativo" },
-  ]);
+interface Broker {
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+  document: string;
+  license: string;
+  leads: number;
+  properties: number;
+  status: string;
+}
 
+export default function AdminCorretores() {
+  const router = useRouter();
+  const [brokers, setBrokers] = useState<Broker[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
   const [showFilter, setShowFilter] = useState(false);
   const [filterStatus, setFilterStatus] = useState("Todos");
+  const [searchTerm, setSearchTerm] = useState("");
 
-  const handleDelete = (id: number) => {
-    if (confirm("Tem certeza que deseja remover este corretor? Esta ação não pode ser desfeita.")) {
-      setBrokers(brokers.filter(b => b.id !== id));
+  const fetchBrokers = async () => {
+    setLoading(true);
+    setError("");
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        router.push("/login");
+        return;
+      }
+
+      const res = await fetch("http://localhost:3001/api/brokers", {
+        headers: {
+          "Authorization": `Bearer ${token}`
+        }
+      });
+
+      const data = await res.json();
+      if (data.success) {
+        setBrokers(data.data);
+      } else {
+        setError(data.message || "Erro ao carregar corretores.");
+      }
+    } catch (err) {
+      setError("Não foi possível conectar ao servidor.");
+    } finally {
+      setLoading(false);
     }
   };
 
-  const filteredBrokers = filterStatus === "Todos" 
-    ? brokers 
-    : brokers.filter(b => b.status === filterStatus);
+  useEffect(() => {
+    fetchBrokers();
+  }, []);
+
+  const handleDelete = async (id: string) => {
+    if (!confirm("Tem certeza que deseja remover este corretor? Esta ação não pode ser desfeita.")) {
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem("token");
+      const res = await fetch(`http://localhost:3001/api/brokers/${id}`, {
+        method: "DELETE",
+        headers: {
+          "Authorization": `Bearer ${token}`
+        }
+      });
+
+      const data = await res.json();
+      if (data.success) {
+        setBrokers(brokers.filter(b => b.id !== id));
+        alert("Corretor removido com sucesso!");
+      } else {
+        alert(data.message || "Erro ao remover corretor.");
+      }
+    } catch (err) {
+      alert("Erro ao conectar ao servidor para excluir corretor.");
+    }
+  };
+
+  const filteredBrokers = brokers.filter(b => {
+    const matchesStatus = filterStatus === "Todos" || b.status === filterStatus;
+    const matchesSearch = 
+      b.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      b.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      b.document.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (b.license && b.license.toLowerCase().includes(searchTerm.toLowerCase()));
+    
+    return matchesStatus && matchesSearch;
+  });
 
   return (
     <div className="flex-1 overflow-y-auto bg-[#f8fafc] p-8">
@@ -62,6 +135,8 @@ export default function AdminCorretores() {
             type="text" 
             placeholder="Buscar por nome, email, CRECI ou CPF..." 
             className="w-full pl-12 pr-4 py-3 bg-gray-50 border border-gray-100 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-accent/20 focus:border-accent transition-all"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
         
@@ -96,6 +171,17 @@ export default function AdminCorretores() {
 
       {/* Brokers Table */}
       <div className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
+        {loading ? (
+          <div className="p-12 text-center flex flex-col items-center gap-3">
+            <Loader2 className="animate-spin text-primary" size={32} />
+            <p className="text-text-muted text-sm">Carregando corretores...</p>
+          </div>
+        ) : error ? (
+          <div className="p-12 text-center flex flex-col items-center gap-3">
+            <AlertCircle className="text-red-500" size={32} />
+            <p className="text-red-500 text-sm">{error}</p>
+          </div>
+        ) : (
         <div className="overflow-x-auto">
           <table className="w-full text-left">
             <thead>
@@ -172,6 +258,7 @@ export default function AdminCorretores() {
             </tbody>
           </table>
         </div>
+      )}
       </div>
     </div>
   );

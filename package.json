@@ -14,11 +14,8 @@
   },
   "devDependencies": {
     "turbo": "^1.10.0"
-<<<<<<< HEAD
-=======
   },
   "dependencies": {
     "@google/genai": "^2.5.0"
->>>>>>> 65ccd49 (chore: inicializa projeto e aplica correções de build)
   }
 }
