@@ -51,10 +51,12 @@ export class LeadsController {
   static async updateLead(req: AuthRequest, res: Response) {
     try {
       const brokerId = req.user?.id;
-      const { id } = req.params;
+      // CORREÇÃO: Forçando o TypeScript a tratar o parâmetro de rota 'id' como string
+      const id = req.params.id as string;
       const data = req.body;
 
       if (!brokerId) return res.status(401).json({ success: false, message: 'Unauthorized' });
+      if (!id) return res.status(400).json({ success: false, message: 'Lead ID is required' });
 
       const lead = await prisma.lead.update({
         where: { id, brokerId },
@@ -70,9 +72,11 @@ export class LeadsController {
   static async deleteLead(req: AuthRequest, res: Response) {
     try {
       const brokerId = req.user?.id;
-      const { id } = req.params;
+      // CORREÇÃO: Forçando o TypeScript a tratar o parâmetro de rota 'id' como string
+      const id = req.params.id as string;
 
       if (!brokerId) return res.status(401).json({ success: false, message: 'Unauthorized' });
+      if (!id) return res.status(400).json({ success: false, message: 'Lead ID is required' });
 
       await prisma.lead.delete({
         where: { id, brokerId }
