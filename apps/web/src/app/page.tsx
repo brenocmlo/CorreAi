@@ -185,6 +185,18 @@ export default function LandingPage() {
     setSubmittingLead(true);
 
     try {
+      let chatHistory = [];
+      if (typeof window !== "undefined") {
+        const storedHistory = localStorage.getItem("temp_chat_history");
+        if (storedHistory) {
+          try {
+            chatHistory = JSON.parse(storedHistory);
+          } catch (err) {
+            console.error(err);
+          }
+        }
+      }
+
       const response = await fetch("http://localhost:3001/api/leads/public", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -195,7 +207,8 @@ export default function LandingPage() {
           budgetMin: 0,
           budgetMax: leadBudget ? Number(leadBudget) : null,
           locationInterest: leadLocation || null,
-          propertyTypePref: selectedTypes
+          propertyTypePref: selectedTypes,
+          chatHistory: chatHistory
         })
       });
 
@@ -233,6 +246,7 @@ export default function LandingPage() {
     localStorage.removeItem("leadId");
     localStorage.removeItem("brokerId");
     localStorage.removeItem("leadName");
+    localStorage.removeItem("temp_chat_history");
     setRegistrationSuccess(false);
     setRegisteredName("");
     setLeadName("");

@@ -44,8 +44,15 @@ app.get('/health', async (_req, res) => {
 async function bootstrap() {
   try {
     if (process.env.MONGODB_URL) {
-      await mongoose.connect(process.env.MONGODB_URL);
-      console.log('📦 Connected to MongoDB');
+      try {
+        console.log('⏳ Connecting to MongoDB...');
+        await mongoose.connect(process.env.MONGODB_URL, {
+          serverSelectionTimeoutMS: 3000
+        });
+        console.log('📦 Connected to MongoDB');
+      } catch (mongoError: any) {
+        console.warn('⚠️ Could not connect to MongoDB. Chat history will run in Memory-Fallback mode. Details:', mongoError.message);
+      }
     }
 
     if (process.env.NODE_ENV !== 'production' && !process.env.VERCEL) {

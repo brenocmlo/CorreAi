@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowLeft, Save, X } from "lucide-react";
+import { ArrowLeft, Save, X, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
@@ -10,6 +10,8 @@ export default function EditarLead() {
   const router = useRouter();
   const id = params?.id;
 
+  const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     nome: "",
     email: "",
@@ -18,33 +20,127 @@ export default function EditarLead() {
     interesse: "Apartamento",
   });
 
-  // Mock data fetching
   useEffect(() => {
-    // In a real app, you would fetch the lead by ID
-    const leads = [
-      { id: 1, name: "Sarah Jenkins", email: "sarah.j@example.com", phone: "+1 555-0123", stage: "Visita Agendada", score: 94, budget: "R$ 800k - 1M", lastActive: "Há 10 min", interest: "Apartamento" },
-      { id: 2, name: "Marcus Thorne", email: "m.thorne@example.com", phone: "+1 555-0198", stage: "Em Negociação", score: 85, budget: "R$ 1.5M - 2M", lastActive: "Ontem", interest: "Casa" },
-      { id: 3, name: "Elena Rodriguez", email: "elena.rod@example.com", phone: "+1 555-0144", stage: "Novo Lead", score: 45, budget: "R$ 500k - 700k", lastActive: "Há 3 horas", interest: "Studio" },
-      { id: 4, name: "James Wilson", email: "j.wilson@example.com", phone: "+1 555-0177", stage: "Proposta Enviada", score: 72, budget: "R$ 900k - 1.2M", lastActive: "Há 2 dias", interest: "Apartamento" },
-    ];
+    async function loadLead() {
+      setLoading(true);
+      try {
+        const token = localStorage.getItem("token");
+        if (!token) {
+          router.push("/login");
+          return;
+        }
 
-    const lead = leads.find(l => l.id === Number(id));
-    if (lead) {
-      setFormData({
-        nome: lead.name,
-        email: lead.email,
-        telefone: lead.phone,
-        orcamento: lead.budget,
-        interesse: lead.interest || "Apartamento",
-      });
+        const res = await fetch("http://localhost:3001/api/leads", {
+          headers: {
+            "Authorization": `Bearer ${token}`
+          }
+        });
+
+        const data = await res.json();
+        if (data.success) {
+          const lead = data.data.find((l: any) => l.id === id);
+          if (lead) {
+            let formType = "Apartamento";
+            const prefType = lead.propertyTypePref?.[0];
+            if (prefType === "HOUSE") formType = "Casa";
+            else if (prefType === "OTHER") formType = "Studio";
+            else if (prefType === "LAND") formType = "Terreno";
+            else if (prefType === "COMMERCIAL") formType = "Comercial";
+
+            setFormData({
+              nome: lead.name,
+              email: lead.email || "",
+              telefone: lead.phone,
+              orcamento: lead.budgetMax ? String(lead.budgetMax) : "",
+              interesse: formType,
+            });
+          }
+        }
+      } catch (err) {
+        console.error("Erro ao carregar lead:", err);
+      } finally {
+        setLoading(false);
+      }
     }
-  }, [id]);
+    if (id) loadLead();
+  }, [id, router]);
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    alert("Lead atualizado com sucesso!");
-    router.push("/leads");
+  const parseNumericValue = (value: string | number): number | null => {
+    if (value === undefined || value === null) return null;
+    const str = String(value).replace(/[^\d,.-]/g, "");
+    if (!str) return null;
+    let normalized = str;
+    if (str.includes(",")) {
+      normalized = str.replace(/\./g, "").replace(",", ".");
+    } else {
+      const parts = str.split(".");
+      if (parts.length > 2) {
+        normalized = str.replace(/\./g, "");
+      } else if (parts.length === 2) {
+        if (parts[1].length === 3) {
+          normalized = str.replace(/\./g, "");
+        }
+      }
+    }
+    const parsed = Number(normalized);
+    return isNaN(parsed) ? null : parsed;
   };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSubmitting(true);
+
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        router.push("/login");
+        return;
+      }
+
+      let apiType = "APARTMENT";
+      if (formData.interesse === "Casa") apiType = "HOUSE";
+      else if (formData.interesse === "Studio") apiType = "OTHER";
+      else if (formData.interesse === "Terreno") apiType = "LAND";
+      else if (formData.interesse === "Comercial") apiType = "COMMERCIAL";
+
+      const response = await fetch(`http://localhost:3001/api/leads/${id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          name: formData.nome,
+          email: formData.email || null,
+          phone: formData.telefone,
+          budgetMax: parseNumericValue(formData.orcamento),
+          propertyTypePref: [apiType]
+        })
+      });
+
+      const result = await response.json();
+      if (response.ok && result.success) {
+        alert("Lead atualizado com sucesso!");
+        router.push("/leads");
+      } else {
+        alert(result.message || "Erro ao atualizar lead.");
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Não foi possível conectar ao servidor.");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex-1 flex flex-col items-center justify-center p-8 bg-background gap-4">
+        <Loader2 className="w-10 h-10 text-accent animate-spin" />
+        <p className="text-slate-500 font-semibold text-sm">Carregando dados do lead...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="flex-1 overflow-y-auto p-8 bg-background">
@@ -124,8 +220,20 @@ export default function EditarLead() {
             <Link href="/leads" className="px-5 py-2.5 text-sm font-medium text-text-main bg-white border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors flex items-center gap-2">
               <X size={16} /> Cancelar
             </Link>
-            <button type="submit" className="px-5 py-2.5 text-sm font-medium text-white bg-primary rounded-xl hover:bg-primary-light transition-colors flex items-center gap-2 shadow-sm">
-              <Save size={16} /> Salvar Alterações
+            <button 
+              type="submit" 
+              disabled={submitting}
+              className="px-5 py-2.5 text-sm font-medium text-white bg-primary rounded-xl hover:bg-primary-light transition-colors flex items-center gap-2 shadow-sm disabled:opacity-50"
+            >
+              {submitting ? (
+                <>
+                  <Loader2 size={16} className="animate-spin" /> Salvando...
+                </>
+              ) : (
+                <>
+                  <Save size={16} /> Salvar Alterações
+                </>
+              )}
             </button>
           </div>
         </form>

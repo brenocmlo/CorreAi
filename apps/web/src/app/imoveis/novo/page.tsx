@@ -1,10 +1,13 @@
 "use client";
 
-import { ArrowLeft, Save, X } from "lucide-react";
+import { ArrowLeft, Save, X, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 
 export default function NovoImovel() {
+  const router = useRouter();
+  const [submitting, setSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     titulo: "",
     endereco: "",
@@ -18,10 +21,80 @@ export default function NovoImovel() {
     imagens: [] as File[],
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const parseNumericValue = (value: string | number): number => {
+    if (value === undefined || value === null) return 0;
+    const str = String(value).replace(/[^\d,.-]/g, "");
+    if (!str) return 0;
+    let normalized = str;
+    if (str.includes(",")) {
+      normalized = str.replace(/\./g, "").replace(",", ".");
+    } else {
+      const parts = str.split(".");
+      if (parts.length > 2) {
+        normalized = str.replace(/\./g, "");
+      } else if (parts.length === 2) {
+        if (parts[1].length === 3) {
+          normalized = str.replace(/\./g, "");
+        }
+      }
+    }
+    const parsed = Number(normalized);
+    return isNaN(parsed) ? 0 : parsed;
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    alert("Imóvel cadastrado com sucesso!");
-    // logic to save property
+    setSubmitting(true);
+
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        router.push("/login");
+        return;
+      }
+
+      // Map "tipo" to backend PropertyType enum
+      let apiType = "APARTMENT";
+      if (formData.tipo === "Casa") apiType = "HOUSE";
+      else if (formData.tipo === "Studio") apiType = "OTHER";
+      else if (formData.tipo === "Comercial") apiType = "COMMERCIAL";
+
+      const response = await fetch("http://localhost:3001/api/properties", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          title: formData.titulo,
+          description: formData.descricao,
+          type: apiType,
+          price: parseNumericValue(formData.preco),
+          area: parseNumericValue(formData.metragem),
+          bedrooms: parseNumericValue(formData.quartos),
+          bathrooms: parseNumericValue(formData.banheiros),
+          parkingSpots: parseNumericValue(formData.vagas),
+          address: formData.endereco,
+          city: "São Paulo", // Default values for schema satisfaction
+          state: "SP",
+          zipCode: "01000-000",
+          features: []
+        })
+      });
+
+      const result = await response.json();
+      if (response.ok && result.success) {
+        alert("Imóvel cadastrado com sucesso!");
+        router.push("/imoveis");
+      } else {
+        alert(result.message || "Erro ao cadastrar imóvel.");
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Não foi possível conectar ao servidor.");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -177,8 +250,20 @@ export default function NovoImovel() {
             <Link href="/imoveis" className="px-5 py-2.5 text-sm font-medium text-text-main bg-white border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors flex items-center gap-2">
               <X size={16} /> Cancelar
             </Link>
-            <button type="submit" className="px-5 py-2.5 text-sm font-medium text-white bg-primary rounded-xl hover:bg-primary-light transition-colors flex items-center gap-2 shadow-sm">
-              <Save size={16} /> Salvar Imóvel
+            <button 
+              type="submit" 
+              disabled={submitting}
+              className="px-5 py-2.5 text-sm font-medium text-white bg-primary rounded-xl hover:bg-primary-light transition-colors flex items-center gap-2 shadow-sm disabled:opacity-50"
+            >
+              {submitting ? (
+                <>
+                  <Loader2 size={16} className="animate-spin" /> Salvando...
+                </>
+              ) : (
+                <>
+                  <Save size={16} /> Salvar Imóvel
+                </>
+              )}
             </button>
           </div>
         </form>

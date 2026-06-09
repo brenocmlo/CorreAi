@@ -61,6 +61,12 @@ export default function ChatbotWidget({ context }: ChatbotWidgetProps) {
     scrollToBottom();
   }, [messages, isOpen, isLoading]);
 
+  useEffect(() => {
+    if (typeof window !== "undefined" && context === "cliente" && !leadId && messages.length > 0) {
+      localStorage.setItem("temp_chat_history", JSON.stringify(messages));
+    }
+  }, [messages, leadId, context]);
+
   const handleSendMessage = async () => {
     if (!inputValue.trim() || isLoading) return;
 

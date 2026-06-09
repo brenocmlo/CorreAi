@@ -117,8 +117,8 @@ model LeadProperty {
   leadId      String
   propertyId  String
   
-  lead        Lead     @relation(fields: [leadId], references: [id])
-  property    Property @relation(fields: [propertyId], references: [id])
+  lead        Lead     @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  property    Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
   
   createdAt   DateTime @default(now())
 
@@ -129,7 +129,7 @@ model LeadProperty {
 model FunnelHistory {
   id          String      @id @default(uuid())
   leadId      String
-  lead        Lead        @relation(fields: [leadId], references: [id])
+  lead        Lead        @relation(fields: [leadId], references: [id], onDelete: Cascade)
   
   oldStage    FunnelStage?
   newStage    FunnelStage

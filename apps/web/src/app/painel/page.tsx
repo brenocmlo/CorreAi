@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { Bell, Search, TrendingUp, MessageSquare, Wallet, Bot } from "lucide-react";
 
 export default function Dashboard() {
@@ -146,9 +147,9 @@ export default function Dashboard() {
             </div>
           </div>
 
-          <button className="w-full mt-6 py-3 bg-gray-100 hover:bg-gray-200 text-text-main font-medium rounded-xl transition-colors text-sm">
+          <Link href="/analises" className="block text-center w-full mt-6 py-3 bg-gray-100 hover:bg-gray-200 text-text-main font-medium rounded-xl transition-colors text-sm">
             Ver Logs Completos
-          </button>
+          </Link>
         </div>
 
       </div>

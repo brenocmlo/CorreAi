@@ -1,6 +1,9 @@
 import type { Request, Response } from 'express';
 import { prisma } from '../utils/prisma.js';
 import type { AuthRequest } from '../middlewares/auth.middleware.js';
+import mongoose from 'mongoose';
+import { ChatInteraction } from '../models/ChatInteraction.js';
+import { inMemoryStore } from './chat.controller.js';
 
 export class LeadsController {
   static async getLeads(req: AuthRequest, res: Response) {
@@ -90,16 +93,18 @@ export class LeadsController {
 
   static async createPublicLead(req: Request, res: Response) {
     try {
-      const { name, email, phone, budgetMin, budgetMax, locationInterest, propertyTypePref, brokerId } = req.body;
+      const { name, email, phone, budgetMin, budgetMax, locationInterest, propertyTypePref, brokerId, chatHistory } = req.body;
 
       let assignedBrokerId = brokerId;
 
       if (!assignedBrokerId) {
-        const firstBroker = await prisma.broker.findFirst();
-        if (!firstBroker) {
+        const latestBroker = await prisma.broker.findFirst({
+          orderBy: { createdAt: 'desc' }
+        });
+        if (!latestBroker) {
           return res.status(400).json({ success: false, message: 'Nenhum corretor cadastrado no sistema para receber o lead.' });
         }
-        assignedBrokerId = firstBroker.id;
+        assignedBrokerId = latestBroker.id;
       }
 
       const newLead = await prisma.lead.create({
@@ -114,6 +119,39 @@ export class LeadsController {
           brokerId: assignedBrokerId
         }
       });
+
+      if (chatHistory && Array.isArray(chatHistory) && chatHistory.length > 0) {
+        const mappedMessages = chatHistory.map((msg: any) => ({
+          role: (msg.sender === 'user' ? 'user' : 'assistant') as 'user' | 'assistant',
+          content: msg.text,
+          timestamp: new Date()
+        }));
+
+        const isMongoConnected = mongoose.connection.readyState === 1;
+        if (isMongoConnected) {
+          await ChatInteraction.create({
+            leadId: newLead.id,
+            brokerId: assignedBrokerId,
+            channel: 'web',
+            messages: mappedMessages,
+            status: 'active'
+          });
+        } else {
+          inMemoryStore[newLead.id] = {
+            leadId: newLead.id,
+            brokerId: assignedBrokerId,
+            channel: 'web',
+            messages: mappedMessages,
+            status: 'active',
+            createdAt: new Date(),
+            updatedAt: new Date(),
+            save: async function() {
+              this.updatedAt = new Date();
+              inMemoryStore[newLead.id] = this;
+            }
+          };
+        }
+      }
 
       res.status(201).json({ success: true, data: newLead });
     } catch (error: any) {
